@@ -43,6 +43,9 @@ def test_VDSR_with_sess():
 		img_3 = np.rot90(img_2)
 		img_4 = np.flipud(img)
 		img_5 = np.fliplr(img)
+		img_6 = np.roll(img, 1, axis=2)
+		img_7 = np.roll(img, 2, axis=2)
+		
 		
 		output_0 = run_sess(sess, img)
 		output_1 = np.rot90(run_sess(sess, img_1),3)
@@ -50,8 +53,10 @@ def test_VDSR_with_sess():
 		output_3 = np.rot90(run_sess(sess, img_3),1)
 		output_4 = np.flipud(run_sess(sess, img_4))
 		output_5 = np.fliplr(run_sess(sess, img_5))
+		output_6 = np.roll(run_sess(sess, img_6), 2, axis=2)
+		output_7 = np.roll(run_sess(sess, img_7), 1, axis=2)
 
-		img = (output_0 + output_1 + output_2 + output_3 + output_4 + output_5)/6
+		img = (output_0 + output_1 + output_2 + output_3 + output_4 + output_5 + output_6 + output_7)/8
 
 		img = Image.fromarray(img.astype('uint8'))
 		img.save(os.path.join(output_dir, img_list[i]), compress_level=0)
