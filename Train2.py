@@ -113,6 +113,6 @@ if __name__ == '__main__':
 				if not saved:
 					saver.save(sess, "/usr/project/xtmp/webster/ADASR_checkpoints/initial.ckpt")
 					saved = True
-				if epoch+(float(step)*BATCH_SIZE/len(train_list))/0.5 > counter:
+				if epoch+(float(step)*BATCH_SIZE/len(train_list))/0.2 > counter:
 					saver.save(sess, "/usr/project/xtmp/webster/ADASR_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
 					counter += 1
