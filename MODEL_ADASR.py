@@ -92,14 +92,13 @@ def EDSR_Block(tensor, scale=8, feature_size=256, num_layers=32, SCALING_FACTOR=
 def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 	with tf.device("/gpu:2"):
 
-		SCALING_FACTOR_input = tf.Variable(0.1, dtype=tf.float32)
-		SCALING_FACTOR_down_2 = tf.Variable(0.1, dtype=tf.float32)
-		SCALING_FACTOR_down_4 = tf.Variable(0.1, dtype=tf.float32)
+		SCALING_FACTOR = 0.1
 
 		'''
 		Preprocessing by subtracting the batch mean
 		'''
-		input_mean = tf.reduce_mean(input_tensor)
+		input_mean = tf.reduce_mean(input_tensor, 2, keep_dims=True)
+		input_mean = tf.reduce_mean(input_mean, 1, keep_dims=True)
 		tensor = input_tensor - input_mean
 
 		'''
@@ -111,19 +110,16 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		'''
 		Superresolution
 		'''
-		tensor_output = EDSR_Block(tensor, scale, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR_input)
-		tensor_output_down_2 = EDSR_Block(tensor_down_2, scale*2, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR_down_2)
-		tensor_output_down_4 = EDSR_Block(tensor_down_4, scale*4, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR_down_4)
+		tensor_output_down_4 = EDSR_Block(tensor_down_4, 2, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR)
 
-		'''
-		Concatenation, should have 9 channels
-		'''
-		tensor_concat = tf.concat([tensor_output, tensor_output_down_2, tensor_output_down_4], axis=3)
+		tensor_output_down_2 = EDSR_Block(tf.concat([tensor_output_down_4, tensor_down_2], axis=3), 2, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR)
+		
+		tensor_output = EDSR_Block(tf.concat([tensor_output_down_2, tensor], axis=3), scale, feature_size, num_layers, SCALING_FACTOR=SCALING_FACTOR)
 
 		'''
 		Downsample
 		'''
-		tensor_final_output = tf.layers.conv2d(tensor_concat, 3, [3,3], padding='SAME')
+		tensor_final_output = tf.layers.conv2d(tensor_output, 3, [3,3], padding='SAME')
 
 		tensor_final_output = tf.clip_by_value(tensor_final_output+input_mean, 0.0, 255.0)
 
