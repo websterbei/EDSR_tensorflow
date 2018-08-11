@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     shared_model = tf.make_template('shared_model', model)
     #train_output, output_edges, target_edges = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
-    train_output = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
+    train_output = shared_model(train_input, scale=8, feature_size=256, num_layers=32)
     #loss = tf.reduce_sum(tf.nn.l2_loss(tf.subtract(train_output, train_gt)))
     loss_1 = tf.reduce_mean(tf.losses.absolute_difference(train_output, train_gt))
 	#loss_2 = tf.reduce_mean(tf.losses.absolute_difference(output_edges, target_edges))
