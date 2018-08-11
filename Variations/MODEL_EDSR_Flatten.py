@@ -57,6 +57,8 @@ def flatten(input_tensor): # Duplicate the G Layer, then depth to space mapping
 
 def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 	with tf.device("/gpu:0"):
+		scale = scale / 2
+
 		'''
 		Preprocessing by subtracting the batch mean
 		'''
