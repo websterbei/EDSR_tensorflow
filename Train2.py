@@ -86,7 +86,7 @@ if __name__ == '__main__':
 			os.mkdir('logs')
 		merged = tf.summary.merge_all()
 		file_writer = tf.summary.FileWriter('logs', sess.graph)
-		
+
 		initializer = tf.global_variables_initializer()
 		sess.run(initializer)
 
@@ -114,5 +114,5 @@ if __name__ == '__main__':
 					saver.save(sess, "/usr/project/xtmp/webster/ADASR_checkpoints/initial.ckpt")
 					saved = True
 				if epoch+(float(step)*BATCH_SIZE/len(train_list))/0.2 > counter:
-					saver.save(sess, "/usr/project/xtmp/webster/ADASR_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
+					saver.save(sess, "/usr/project/xtmp/webster/ADASR_checkpoints/ADASR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
 					counter += 1

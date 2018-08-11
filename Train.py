@@ -59,61 +59,61 @@ if __name__ == '__main__':
 
 	shared_model = tf.make_template('shared_model', model)
 
-	#train_output, output_edges, target_edges = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
+    #train_output, output_edges, target_edges = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
     train_output = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
-	#loss = tf.reduce_sum(tf.nn.l2_loss(tf.subtract(train_output, train_gt)))
-	loss_1 = tf.reduce_mean(tf.losses.absolute_difference(train_output, train_gt))
+    #loss = tf.reduce_sum(tf.nn.l2_loss(tf.subtract(train_output, train_gt)))
+    loss_1 = tf.reduce_mean(tf.losses.absolute_difference(train_output, train_gt))
 	#loss_2 = tf.reduce_mean(tf.losses.absolute_difference(output_edges, target_edges))
-	loss = loss_1
-	tf.summary.scalar("loss", loss)
+    loss = loss_1
+    tf.summary.scalar("loss", loss)
 
-	mse = tf.reduce_mean(tf.squared_difference(train_output, train_gt))
-	PSNR = tf.constant(255**2,dtype=tf.float32)/mse
-	PSNR = tf.constant(10,dtype=tf.float32)*log10(PSNR)
+    mse = tf.reduce_mean(tf.squared_difference(train_output, train_gt))
+    PSNR = tf.constant(255**2,dtype=tf.float32)/mse
+    PSNR = tf.constant(10,dtype=tf.float32)*log10(PSNR)
 
-	global_step 	= tf.Variable(0, trainable=False)
-	learning_rate 	= tf.train.exponential_decay(BASE_LR, global_step*BATCH_SIZE, DECAY_STEP, DECAY_RATE, staircase=True)
-	tf.summary.scalar("learning rate", learning_rate)
+    global_step 	= tf.Variable(0, trainable=False)
+    learning_rate 	= tf.train.exponential_decay(BASE_LR, global_step*BATCH_SIZE, DECAY_STEP, DECAY_RATE, staircase=True)
+    tf.summary.scalar("learning rate", learning_rate)
 
-	optimizer = tf.train.AdamOptimizer(learning_rate)#tf.train.MomentumOptimizer(learning_rate, 0.9)
-	opt = optimizer.minimize(loss, global_step=global_step)
+    optimizer = tf.train.AdamOptimizer(learning_rate)#tf.train.MomentumOptimizer(learning_rate, 0.9)
+    opt = optimizer.minimize(loss, global_step=global_step)
 
-	saver = tf.train.Saver()
+    saver = tf.train.Saver()
 
-	shuffle(train_list)
-	config = tf.ConfigProto()
-	config.gpu_options.allow_growth = True
+    shuffle(train_list)
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
 
-	with tf.Session(config=config) as sess:
-		if not os.path.exists('logs'):
-			os.mkdir('logs')
-		merged = tf.summary.merge_all()
-		file_writer = tf.summary.FileWriter('logs', sess.graph)
+    with tf.Session(config=config) as sess:
+        if not os.path.exists('logs'):
+            os.mkdir('logs')
+        merged = tf.summary.merge_all()
+        file_writer = tf.summary.FileWriter('logs', sess.graph)
 
-		initializer = tf.global_variables_initializer()
-		sess.run(initializer)
+        initializer = tf.global_variables_initializer()
+        sess.run(initializer)
 
-		if model_path:
-			print "restore model..."
-			saver.restore(sess, model_path)
-			assign_op = global_step.assign_op(0)
-			sess.run(assign_op)
-			print "Done"
+        if model_path:
+        	print "restore model..."
+        	saver.restore(sess, model_path)
+        	assign_op = global_step.assign_op(0)
+        	sess.run(assign_op)
+        	print "Done"
 
-		saved = False
-		log_file = open('log.csv', 'w')
-		for epoch in xrange(0, MAX_EPOCH):
-			for step in range(len(train_list)//BATCH_SIZE):
-				offset = step*BATCH_SIZE
-				input_data, gt_data = get_image_batch(train_list, offset, BATCH_SIZE)
-				feed_dict = {train_input: input_data, train_gt: gt_data}
-				_,l,output,lr, g_step, mse_val, psnr_val = sess.run([opt, loss, train_output, learning_rate, global_step, mse, PSNR], feed_dict=feed_dict)
-				print "[epoch %2.4f] loss %.4f\tmse %.4f\tpsnr %.4f\tlr %.5f"%(epoch+(float(step)*BATCH_SIZE/len(train_list)), np.sum(l)/BATCH_SIZE, mse_val, psnr_val, lr)
-				log_file.write('%2.4f,%.4f,%.4f' % (epoch+(float(step)*BATCH_SIZE/len(train_list)), np.sum(l)/BATCH_SIZE, psnr_val) + '\n')
-				log_file.flush()
-				del input_data, gt_data
-				if not saved:
-					saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/initial.ckpt")
-					saved = True
+        saved = False
+        log_file = open('log.csv', 'w')
+        for epoch in xrange(0, MAX_EPOCH):
+        	for step in range(len(train_list)//BATCH_SIZE):
+        		offset = step*BATCH_SIZE
+        		input_data, gt_data = get_image_batch(train_list, offset, BATCH_SIZE)
+        		feed_dict = {train_input: input_data, train_gt: gt_data}
+        		_,l,output,lr, g_step, mse_val, psnr_val = sess.run([opt, loss, train_output, learning_rate, global_step, mse, PSNR], feed_dict=feed_dict)
+        		print "[epoch %2.4f] loss %.4f\tmse %.4f\tpsnr %.4f\tlr %.5f"%(epoch+(float(step)*BATCH_SIZE/len(train_list)), np.sum(l)/BATCH_SIZE, mse_val, psnr_val, lr)
+        		log_file.write('%2.4f,%.4f,%.4f' % (epoch+(float(step)*BATCH_SIZE/len(train_list)), np.sum(l)/BATCH_SIZE, psnr_val) + '\n')
+        		log_file.flush()
+        		del input_data, gt_data
+        		if not saved:
+        			saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/initial.ckpt")
+        			saved = True
 
-			saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
+        	saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
