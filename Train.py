@@ -7,7 +7,7 @@ import numpy as np
 import scipy.io
 from MODEL_EDSR import model
 
-DATA_PATH = "/usr/project/xtmp/EDSR_HR_train_40"
+DATA_PATH = "/usr/project/xtmp/yb44/EDSR_HR_train_40"
 #DATA_PATH = "data/train"
 INPUT_IMG_SIZE = (40,40)
 OUTPUT_IMG_SIZE = (320, 320)

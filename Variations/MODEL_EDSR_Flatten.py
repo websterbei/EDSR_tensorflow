@@ -48,7 +48,7 @@ def upsample(x, scale=8, features=256, activation=tf.nn.relu):
 	return x
 
 def flatten(input_tensor): # Duplicate the G Layer, then depth to space mapping
-	rgb_layers = tf.split(input_tensor, axis=3)
+	rgb_layers = tf.split(input_tensor, [1,1,1], axis=3)
 	rggb_layers = [rgb_layers[0], rgb_layers[1], rgb_layers[1], rgb_layers[2]]
 	stacked = tf.concat(rggb_layers, axis=3)
 	flattened = tf.depth_to_space(stacked, 2)
