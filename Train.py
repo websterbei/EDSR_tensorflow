@@ -50,15 +50,14 @@ def get_image_batch(train_list,offset,batch_size):
 	return input_list, gt_list
 
 if __name__ == '__main__':
-	train_list = get_train_list(DATA_PATH)
+    train_list = get_train_list(DATA_PATH)
 
-	train_input  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, INPUT_IMG_SIZE[0], INPUT_IMG_SIZE[1], 3))
-	train_gt  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, OUTPUT_IMG_SIZE[0], OUTPUT_IMG_SIZE[1], 3))
+    train_input  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, INPUT_IMG_SIZE[0], INPUT_IMG_SIZE[1], 3))
+    train_gt  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, OUTPUT_IMG_SIZE[0], OUTPUT_IMG_SIZE[1], 3))
 	#output_edges  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, OUTPUT_IMG_SIZE[0], OUTPUT_IMG_SIZE[1], 3))
 	#target_edges  = tf.placeholder(tf.float32, shape=(BATCH_SIZE, OUTPUT_IMG_SIZE[0], OUTPUT_IMG_SIZE[1], 3))
 
-	shared_model = tf.make_template('shared_model', model)
-
+    shared_model = tf.make_template('shared_model', model)
     #train_output, output_edges, target_edges = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
     train_output = shared_model(train_input, train_gt, scale=8, feature_size=256, num_layers=32)
     #loss = tf.reduce_sum(tf.nn.l2_loss(tf.subtract(train_output, train_gt)))
