@@ -50,12 +50,26 @@ def upsample(x, scale=8, features=256, activation=tf.nn.relu):
 def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 	with tf.device("/gpu:0"):
 		'''
+		Create the high pass filter
+		'''
+		filter_layer = tf.constant([[-1/9, -1/9, -1/9], [-1/9, 8/9, -1/9], [-1/9, -1/9, -1/9]], tf.float32)
+		filter_layer_3 = tf.stack([sobel, sobel, sobel], axis=2)
+		filter = tf.reshape(sobel_3, [1, 3, 3, 3])
+
+		'''
 		Preprocessing by subtracting the batch mean
 		'''
 		#input_mean = tf.reduce_mean(input_tensor)
 		input_mean = tf.reduce_mean(input_tensor, 2, keep_dims=True)
 		input_mean = tf.reduce_mean(input_mean, 1, keep_dims=True)
 		tensor = input_tensor - input_mean
+
+		'''
+		Obtain edge
+		'''
+		edge = tf.nn.conv2d(tensor, filter, strides=[1,1,1,1], padding='SAME')
+
+		tensor = tensor - edge
 
 		'''
 		First convolution layer
@@ -65,10 +79,16 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		conv_1 = tensor #backup
 
 		'''
-		Building resBlocks
+		Building resBlocks for residual
 		'''
 		for i in range(num_layers):
 			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
+
+		'''
+		Building resBlocks for edge
+		'''
+		for i in range(num_layers):
+			edge = resBlock(edge, feature_size, scale=SCALING_FACTOR)
 
 		'''
 		Add back the conv_1 tensor
@@ -80,7 +100,8 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		Upsampling
 		'''
 		tensor = upsample(tensor, scale, feature_size, activation=None)
+		edge = upsample(edge, scale, feature_size, activation=None)
 
-		tensor = tf.clip_by_value(tensor+input_mean, 0.0, 255.0)
+		tensor = tf.nn.relu(tensor+input_mean+edge)
 
 		return tensor
