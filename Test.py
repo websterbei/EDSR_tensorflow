@@ -12,7 +12,7 @@ import time
 input_dir = '../DIV2K_valid_LR_x8'
 output_dir = './output2'
 
-model_path = './checkpoints/EDSR_const_clip_0.01_epoch_012.ckpt-404627'
+model_path = '/usr/project/xtmp/webster/EDSR_15_checkpoints/EDSR_const_clip_0.01_epoch_001.ckpt-64740'
 
 def get_img_list():
 	files = [x for x in os.listdir(input_dir) if x.endswith('.png') and not x.startswith('.')]
@@ -26,8 +26,7 @@ def get_test_image(img_list, index):
 
 def run_sess(sess, img):
 	shape = img.shape
-	target = np.zeros((img.shape[0]*8,img.shape[1]*8, 3))
-	img = sess.run(train_output, feed_dict={input_tensor: img.reshape(1, img.shape[0], img.shape[1], 3), target_tensor: target.reshape(1, target.shape[0], target.shape[1], 3)})
+	img = sess.run(train_output, feed_dict={input_tensor: img.reshape(1, img.shape[0], img.shape[1], 3)})
 	img = img.reshape(shape[0]*8, shape[1]*8, 3)
 	return img
 
@@ -62,11 +61,14 @@ def test_VDSR_with_sess():
 		img.save(os.path.join(output_dir, img_list[i]), compress_level=0)
 
 
-with tf.Session() as sess:
+gpu_options=tf.GPUOptions(per_process_gpu_memory_fraction=1)
+config=tf.ConfigProto(log_device_placement=False,gpu_options=gpu_options)
+
+with tf.Session(config=config) as sess:
 	input_tensor = tf.placeholder(tf.float32, shape=(1, None, None, 3))
 	target_tensor = tf.placeholder(tf.float32, shape=(1, None, None, 3))
 	shared_model = tf.make_template('shared_model', model)
-	train_output, output_edge, target_edge = shared_model(input_tensor, target_tensor, scale=8, feature_size=256, num_layers=32)
+	train_output = shared_model(input_tensor, scale=8, feature_size=256, num_layers=32)
 	saver = tf.train.Saver()
 	initializer = tf.global_variables_initializer()
 	sess.run(initializer)

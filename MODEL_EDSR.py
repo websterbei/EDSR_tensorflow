@@ -53,8 +53,8 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		Create the high pass filter
 		'''
 		filter_layer = tf.constant([[-1/9, -1/9, -1/9], [-1/9, 8/9, -1/9], [-1/9, -1/9, -1/9]], tf.float32)
-		filter_layer_3 = tf.stack([sobel, sobel, sobel], axis=2)
-		filter = tf.reshape(sobel_3, [1, 3, 3, 3])
+		filter_layer_3 = tf.stack([filter_layer, filter_layer, filter_layer], axis=2)
+		filter = tf.reshape(filter_layer_3, [1, 3, 3, 3])
 
 		'''
 		Preprocessing by subtracting the batch mean
@@ -87,6 +87,7 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		'''
 		Building resBlocks for edge
 		'''
+		edge = tf.layers.conv2d(edge, feature_size, [3,3,], padding='SAME')
 		for i in range(num_layers):
 			edge = resBlock(edge, feature_size, scale=SCALING_FACTOR)
 
