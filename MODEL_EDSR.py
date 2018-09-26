@@ -52,34 +52,64 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		'''
 		Preprocessing by subtracting the batch mean
 		'''
-		#input_mean = tf.reduce_mean(input_tensor)
+		#input_mean = tf.reduce_mean(input_tensor
 		input_mean = tf.reduce_mean(input_tensor, 2, keep_dims=True)
 		input_mean = tf.reduce_mean(input_mean, 1, keep_dims=True)
 		tensor = input_tensor - input_mean
 
 		'''
-		First convolution layer
+		Conv 1
 		'''
 		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME') #Linear activation by default
-
 		conv_1 = tensor #backup
 
-		'''
-		Building resBlocks
-		'''
-		for i in range(num_layers):
+		#Building resBlocks
+		for i in range(10):
 			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
 
-		'''
-		Add back the conv_1 tensor
-		'''
+		#Upsampling x2
 		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME')
 		tensor += conv_1
+		tensor = upsample(tensor, 2, feature_size, activation=None)
 
 		'''
-		Upsampling
+		Conv 2
 		'''
-		tensor = upsample(tensor, scale, feature_size, activation=None)
+		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME') #Linear activation by default
+		conv_1 = tensor #backup
+
+		#Building resBlocks
+		for i in range(10):
+			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
+
+		#Upsampling x2
+		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME')
+		tensor += conv_1
+		tensor = upsample(tensor, 2, feature_size, activation=tf.nn.relu)
+
+		'''
+		Conv 3
+		'''
+		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME') #Linear activation by default
+		conv_1 = tensor #backup
+
+		#Building resBlocks
+		for i in range(10):
+			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
+
+		#Upsampling x2
+		tensor = tf.layers.conv2d(tensor, feature_size, [3,3], padding='SAME')
+		tensor += conv_1
+		tensor = upsample(tensor, 2, feature_size, activation=None)
+
+		'''
+		Final smoothing
+		'''
+		tensor = tf.layers.conv2d(tensor, feature_size/4, [3,3], padding='SAME') #Linear activation by default
+		conv_1 = tensor #backup
+		for i in range(2):
+			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
+		tensor = tf.layers.conv2d(tensor+conv1, 3, [3,3], padding='SAME') #Linear activation by default
 
 		tensor = tf.clip_by_value(tensor+input_mean, 0.0, 255.0)
 

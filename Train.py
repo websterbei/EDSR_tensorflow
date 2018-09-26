@@ -101,6 +101,7 @@ if __name__ == '__main__':
 
         saved = False
         log_file = open('log.csv', 'w')
+        counter = 0
         for epoch in xrange(0, MAX_EPOCH):
         	for step in range(len(train_list)//BATCH_SIZE):
         		offset = step*BATCH_SIZE
@@ -115,4 +116,6 @@ if __name__ == '__main__':
         			saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/initial.ckpt")
         			saved = True
 
-        	saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % epoch ,global_step=global_step)
+        	    if int(counter/0.25)>counter:
+                    counter = int(counter/0.25)
+                    saver.save(sess, "/usr/project/xtmp/webster/EDSR_15_checkpoints/EDSR_const_clip_0.01_epoch_%03d.ckpt" % counter ,global_step=global_step)
