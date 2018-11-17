@@ -108,8 +108,8 @@ def model(input_tensor, scale=8, feature_size=256, num_layers=32):
 		tensor = tf.layers.conv2d(tensor, feature_size/4, [3,3], padding='SAME') #Linear activation by default
 		conv_1 = tensor #backup
 		for i in range(2):
-			tensor = resBlock(tensor, feature_size, scale=SCALING_FACTOR)
-		tensor = tf.layers.conv2d(tensor+conv1, 3, [3,3], padding='SAME') #Linear activation by default
+			tensor = resBlock(tensor, feature_size/4, scale=SCALING_FACTOR)
+		tensor = tf.layers.conv2d(tensor+conv_1, 3, [3,3], padding='SAME') #Linear activation by default
 
 		tensor = tf.clip_by_value(tensor+input_mean, 0.0, 255.0)
 
